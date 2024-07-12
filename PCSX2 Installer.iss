@@ -31,7 +31,7 @@ DefaultGroupName={#MyAppName}
 DefaultDirName={commonpf64}\{#MyAppName}
 
 OutputDir=PCSX2
-OutputBaseFilename=pcsx2-setup
+OutputBaseFilename={#MyAppName}-{#MyAppVersion}-setup
 
 ; InfoAfterFile=README.txt
 UninstallDisplayIcon={app}\{#MyAppExeName},0
