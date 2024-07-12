@@ -55,7 +55,7 @@ Source: "{#MySetupResourceDir}\portable.txt"; DestDir: {app} ; Check: IsPortable
 [Code]    
 const
   StandardDescText =
-    'All PCSX2 Data will be stores in My Documents, separate from the program';
+    'All PCSX2 Data will be stores in Documents, separate from the program.';
   PortableDescText =
     'All PCSX2 Data will be kept in the same folder as PCSX2 itself by default.';
 
@@ -129,14 +129,14 @@ begin
   begin
     if Pos('C:\Windows\', WizardForm.DirEdit.Text) <> 0 then
     begin
-      MsgBox('Installing PCSX2 in the Windows folder is not advised. Please choose another folder', mbError, MB_OK);
+      MsgBox('Installing PCSX2 in the Windows folder is not advised. Please choose another folder.', mbError, MB_OK);
       Result := false;
       Exit;
     end;
     
     if (isPortableInstallation = true) and (Pos('Program Files', WizardForm.DirEdit.Text) <> 0) then
     begin
-      MsgBox('Portable install cannot be inside Program Files, please choose another folder', mbError, MB_OK);
+      MsgBox('Portable install cannot be inside Program Files, please choose another folder.', mbError, MB_OK);
       Result := false;
       Exit;
     end;
