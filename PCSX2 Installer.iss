@@ -28,7 +28,7 @@ ArchitecturesInstallIn64BitMode=win64
 
 DefaultGroupName={#MyAppName}
 
-DefaultDirName=C:\Program Files\{#MyAppName}
+DefaultDirName={commonpf64}\{#MyAppName}
 
 OutputDir=PCSX2
 OutputBaseFilename=pcsx2-setup
@@ -48,7 +48,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "{#MySetupResourceDir}\Redist\VC_redist.x64.exe"; DestDir: {tmp}
-Source: "{#MyAppSourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#MyAppSourceDir}\*"; Excludes: "PUT PCSX2 BUILD HERE.txt"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MySetupResourceDir}\portable.txt"; DestDir: {app} ; Check: IsPortableInstallation;
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
@@ -112,19 +112,43 @@ begin
   Result := PortableRadioButton.Checked;
 end;
 
-function SetDefaultDirName(Param: string): string;
+procedure SetDefaultDirName();
 begin
-  if isPortableInstallation then
-    WizardForm.DirEdit.Text := 'C:\{#MyAppName}' ;
-  WizardForm.DirEdit.Text := 'C:\Program Files\{#MyAppName}' ;
+  if isPortableInstallation = true then
+    WizardForm.DirEdit.Text := 'C:\{#MyAppName}'
+  else
+    WizardForm.DirEdit.Text := ExpandConstant('{commonpf}') + '\{#MyAppName}';
 end;
 
-{Where should i call the "SetDefaultDirName" function?}
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  if CurPageID = 100 then
+    SetDefaultDirName();
+    
+  if CurPageID = 6 then
+  begin
+    if Pos('C:\Windows\', WizardForm.DirEdit.Text) <> 0 then
+    begin
+      MsgBox('Installing PCSX2 in the Windows folder is not advised. Please choose another folder', mbError, MB_OK);
+      Result := false;
+      Exit;
+    end;
+    
+    if (isPortableInstallation = true) and (Pos('Program Files', WizardForm.DirEdit.Text) <> 0) then
+    begin
+      MsgBox('Portable install cannot be inside Program Files, please choose another folder', mbError, MB_OK);
+      Result := false;
+      Exit;
+    end;
+  end;
+    
+  Result := true;
+end;
 
 [Icons]
 ; StartMenu (Directly)
-Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-
+Name: "{commonprograms}\{#MyAppName}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
+Name: "{commonprograms}\{#MyAppName}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}";
 ; or
 ; StartMenu Group
 ;Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
