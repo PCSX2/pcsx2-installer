@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "PCSX2"
-#define MyAppVersion "2.0"
+#define MyAppVersion "v2.0.0"
 #define MyAppPublisher "PCSX2 Team"
 #define MyAppURL "http:/pcsx2.net/"
 #define MyAppExeName "pcsx2-qt.exe"
@@ -33,7 +33,7 @@ DefaultGroupName={#MyAppName}
 DefaultDirName={commonpf64}\{#MyAppName}
 
 OutputDir=PCSX2
-OutputBaseFilename={#MyAppName}-{#MyAppVersion}-setup
+OutputBaseFilename={#MyAppName}-{#MyAppVersion}-windows-x64-installer
 
 ; InfoAfterFile=README.txt
 UninstallDisplayIcon={app}\{#MyAppExeName},0
