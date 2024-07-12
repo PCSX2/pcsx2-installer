@@ -153,6 +153,18 @@ begin
   Result := true;
 end;
 
+procedure SetMarqueeProgress(Marquee: Boolean);
+begin
+  if Marquee then
+  begin
+    WizardForm.ProgressGauge.Style := npbstMarquee;
+  end
+    else
+  begin
+    WizardForm.ProgressGauge.Style := npbstNormal;
+  end;
+end;
+
 [Icons]
 ; StartMenu (Directly)
 Name: "{commonprograms}\{#MyAppName}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
@@ -175,5 +187,7 @@ Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string
 [Run]
 Filename: "{tmp}\VC_redist.x64.exe"; Parameters: "/q /norestart"; \
     Flags: waituntilterminated; \
-    StatusMsg: "Installing VC++ 2019-2022 Redistributables..."
+    StatusMsg: "Installing VC++ 2019-2022 Redistributables... Please Wait."; \
+    BeforeInstall: SetMarqueeProgress(True); \
+    AfterInstall: SetMarqueeProgress(False)
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
