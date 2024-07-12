@@ -2,13 +2,13 @@
 
 ; These definitions are shared between the 2 installers (pre-install/portable and full)
 ; This reduces duplicate code throughout both installers.
-
+!define ENABLE_LOGGING
 !include "FileFunc.nsh"
 
 ManifestDPIAware true
 Unicode true
-ShowInstDetails nevershow
-ShowUninstDetails nevershow
+ShowInstDetails show
+ShowUninstDetails show
 
 SetCompressor /SOLID lzma
 SetCompressorDictSize 24
@@ -17,7 +17,7 @@ Var UserPrivileges
 Var IsAdmin
 
 !ifndef APP_VERSION
-  !define APP_VERSION      "1.8.0"
+  !define APP_VERSION      "2.0.0"
 !endif
 
 !define APP_NAME         "PCSX2 ${APP_VERSION}"
@@ -25,7 +25,7 @@ Var IsAdmin
 ; The name of the installer
 Name "${APP_NAME}"
 
-!define APP_FILENAME     "pcsx2"
+!define APP_FILENAME     "pcsx2-qt"
 !define APP_EXE          "$INSTDIR\${APP_FILENAME}.exe"
 
 ;===============================
@@ -41,10 +41,7 @@ Name "${APP_NAME}"
 Function IsUserAdmin
 !include WinVer.nsh
 # No user should ever have to experience this pain ;)
-  ${IfNot} ${AtLeastWinVista}
-    MessageBox MB_OK "Your operating system is unsupported by PCSX2. Please upgrade your operating system or install PCSX2 1.4.0."
-    Quit
-  ${ElseIfNot} ${AtLeastWin8.1}
+  ${IfNot} ${AtLeastWin8.1}
     MessageBox MB_OK "Your operating system is unsupported by PCSX2. Please upgrade your operating system or install PCSX2 1.6.0."
     Quit
   ${EndIf}

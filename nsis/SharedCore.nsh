@@ -17,16 +17,25 @@ Function RedistInstallation
 !include WinVer.nsh
 
 ; Check if the VC runtimes are installed
-ReadRegDword $R5 HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
+ReadRegDword $R5 HKLM "SOFTWARE\Microsoft\VisualStudio\17.0\VC\Runtimes\x64" "Installed"
+
+; Skip VC Redist install if they're not an admin
+Call IsUserAdmin
+${If} $IsAdmin == 0
+${NSD_CreateLabel} 0 45 100% 10u "Skipping VC Redist install, no admin rights"
+Goto +11
+${EndIf}
 
 ${If} $R5 == "1"
     Return
 ${EndIf}
 
 ; Download and install the VC redistributable from the internet
-inetc::get /CONNECTTIMEOUT 30 /RECEIVETIMEOUT 30 "https://aka.ms/vs/16/release/VC_redist.x86.exe" "$TEMP\VC_redist.x86.exe" /END
-    ExecShellWait open "$TEMP\VC_redist.x86.exe" "/INSTALL /Q /NORESTART"
-    Delete "$TEMP\VC_redist.x86.exe"
+${NSD_CreateLabel} 0 45 50% 10u "Installing VC Redistributables"
+inetc::get /CONNECTTIMEOUT 30 /RECEIVETIMEOUT 30 "https://aka.ms/vs/17/release/vc_redist.x64.exe" "$TEMP\VC_redist.x64.exe" /END
+    ExecShellWait open "$TEMP\VC_redist.x64.exe" "/INSTALL /Q /NORESTART"
+    Delete "$TEMP\VC_redist.x64.exe"
+
 FunctionEnd
 
 Section "" SEC_REDIST

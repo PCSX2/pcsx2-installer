@@ -61,30 +61,38 @@ ${NSD_KillTimer} NSD_Timer.Callback
 
 ;-----------------------------------------
 ; Copy installer files to a temp directory instead of repacking twice (for each installer)
-    ${NSD_CreateLabel} 0 45 80% 10u "Unpacking files. Maybe it's time to upgrade that computer!"
+    ${NSD_CreateLabel} 0 45 80% 10u "Unpacking files"
     Call TempFilesOut
-    ${NSD_CreateLabel} 0 45 100% 10u "Moving on"
+    ${NSD_CreateLabel} 0 45 100% 10u "Finished unpacking files"
 ;-----------------------------------------
 
     Call PreInstall_UsrWait
+	
+; Something here is crashing portable installer - CK1
 SendMessage $HWNDPARENT ${WM_COMMAND} 1 0
 FunctionEnd
 
+; This also determines files to be included with the installer. 
+; Verify there are no custom DLLs in folder if you are compiling
 Function TempFilesOut
   SetOutPath "$TEMP\PCSX2 ${APP_VERSION}"
-    File ..\bin\pcsx2.exe
-    File ..\bin\GameIndex.yaml
-    File ..\bin\cheats_ws.zip
-    File ..\bin\PCSX2_keys.ini.default
+    File ..\bin\pcsx2-qt.exe
+	File ..\bin\updater.exe
+	File ..\bin\qt.conf
+	File ..\bin\*.dll
+	
+  SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\QtPlugins"
+	File /r ..\bin\QtPlugins\*
+	
+; GameIndex, Controller DB, shaders, etc
+  SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\resources"
+	File /r ..\bin\resources\*
+	
   SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\Docs"
     File ..\bin\docs\*
 
-  SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\Shaders"
-    File ..\bin\shaders\GS.fx
-    File ..\bin\shaders\GS_FX_Settings.ini
-
-  SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\Langs"
-    File /nonfatal /r ..\bin\Langs\*.mo
+  SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\translations"
+    File /r ..\bin\translations\*.qm
 FunctionEnd
 
 Function PreInstall_UsrWait
@@ -116,13 +124,13 @@ ${EndIf}
 
 # Create labels/buttons for the normal installation
 ${NSD_OnClick} $InstallMode_Normal InstallMode_UsrWait
-${NSD_CreateLabel} 10 55 100% 20u "PCSX2 will be installed in Program Files unless another directory is specified. User files are stored in the Documents/PCSX2 directory."
+${NSD_CreateLabel} 10 55 100% 20u "PCSX2 will be installed in Program Files unless another directory is specified. User files are also stored here."
 
 # Create labels/buttons for the portable installation
 ${NSD_CreateRadioButton} 0 95 100% 10u "Portable Installation"
 Pop $InstallMode_Portable
 ${NSD_OnClick} $InstallMode_Portable InstallMode_UsrWait
-${NSD_CreateLabel} 10 115 100% 20u "Install PCSX2 to any directory you want. Choose this option if you prefer to have all of your files in the same folder or frequently update PCSX2 through Orphis' Buildbot."
+${NSD_CreateLabel} 10 115 100% 20u "Install PCSX2 to any directory you want."
 
 nsDialogs::Show
 
@@ -160,7 +168,7 @@ FunctionEnd
 Function StartFullInstaller
   ;Checks if install directory is changed from default with /D, and if not, changes to standard full install directory.
   ${If} $INSTDIR == "$DOCUMENTS\PCSX2 ${APP_VERSION}"
-  StrCpy $INSTDIR "$PROGRAMFILES\PCSX2"
+  StrCpy $INSTDIR "$PROGRAMFILES64\PCSX2"
   ${EndIf}
   SetOutPath "$TEMP"
   File "pcsx2-${APP_VERSION}-include_standard.exe"
@@ -171,11 +179,14 @@ FunctionEnd
 ; ----------------------------------
 ;     Portable Install Section
 ; ----------------------------------
+
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
+;!insertmacro MUI_PAGE_FINISH
 
-!define MUI_FINISHPAGE_RUN "$INSTDIR\pcsx2.exe"
+
+!define MUI_FINISHPAGE_RUN "$INSTDIR\pcsx2-qt.exe"
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW ModifyRunCheckbox
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_LANGUAGE "English"
@@ -189,14 +200,14 @@ InstallDir "$DOCUMENTS\PCSX2 ${APP_VERSION}"
 
 Section "" INST_PORTABLE
 SetOutPath "$INSTDIR"
-File portable.ini
+File "portable.ini"
 RMDir /r "$TEMP\PCSX2 ${APP_VERSION}"
 SectionEnd
 
 Section "" SID_PCSX2
 SectionEnd
 
-# Gives the user a fancy checkbox to run PCSX2 right from the installer!
+; Gives the user a fancy checkbox to run PCSX2 right from the installer!
 Function ModifyRunCheckbox
 ${IfNot} ${SectionIsSelected} ${SID_PCSX2}
     SendMessage $MUI.FINISHPAGE.RUN ${BM_SETCHECK} ${BST_UNCHECKED} 0

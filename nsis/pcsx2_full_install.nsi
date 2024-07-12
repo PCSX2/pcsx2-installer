@@ -15,7 +15,7 @@ RequestExecutionLevel admin
 OutFile "pcsx2-${APP_VERSION}-${OUTFILE_POSTFIX}.exe"
 
 ; The default installation directory for the full installer
-InstallDir "$PROGRAMFILES\PCSX2"
+InstallDir "$PROGRAMFILES64\PCSX2"
 
 !define INSTDIR_REG_KEY  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_FILENAME}"
 
@@ -28,7 +28,7 @@ InstallDir "$PROGRAMFILES\PCSX2"
 ; RequestExecutionLevel is admin for the full install, so we need to avoid transferring the elevated rights to PCSX2
 ; if the user chooses to run from the installer upon completion.
 !define MUI_FINISHPAGE_RUN "$WINDIR\explorer.exe"
-!define MUI_FINISHPAGE_RUN_PARAMETERS "$INSTDIR\pcsx2.exe"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "$INSTDIR\pcsx2-qt.exe"
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW ModifyRunCheckbox
 !insertmacro MUI_PAGE_FINISH
 
@@ -51,11 +51,11 @@ SectionEnd
 Section ""
 
 ; Write the installation path into the registry
-  WriteRegStr HKLM Software\PCSX2 "Install_Dir" "$INSTDIR"
+  WriteRegStr HKLM Software\WOW6432Node\PCSX2 "Install_Dir" "$INSTDIR"
   ; Write the uninstall keys for Windows
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayName"      "PCSX2 - PlayStation 2 Emulator"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "Publisher"        "PCSX2 Team"
-  WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayIcon"      "$INSTDIR\pcsx2.exe"
+  WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayIcon"      "$INSTDIR\pcsx2-qt.exe"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayVersion"   "${APP_VERSION}"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "HelpLink"         "https://forums.pcsx2.net"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "UninstallString"  "$INSTDIR\Uninst-pcsx2.exe"
