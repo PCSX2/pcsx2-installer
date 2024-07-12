@@ -25,6 +25,8 @@ AppUpdatesURL={#MyAppURL}
 Compression=lzma/max
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=win64
+MinVersion=10.0.17134
+;10.0.22000 ; Windows 11 code just for testing failure on Windows 10
 
 DefaultGroupName={#MyAppName}
 
@@ -38,6 +40,9 @@ UninstallDisplayIcon={app}\{#MyAppExeName},0
 SetupIconFile={#MySetupResourceDir}\AppIconLarge.ico
 ;WizardImageFile={#MySetupResourceDir}\banner.bmp
 WizardSmallImageFile={#MySetupResourceDir}/AppIconLarge.bmp
+
+[Messages]
+WindowsVersionNotSupported=PCSX2 requires Windows 10 (1809) or later. To use this app, please update your operating system.
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -55,9 +60,9 @@ Source: "{#MySetupResourceDir}\portable.txt"; DestDir: {app} ; Check: IsPortable
 [Code]    
 const
   StandardDescText =
-    'All PCSX2 Data will be stores in Documents, separate from the program.';
+    'All PCSX2 Data will be stored in Documents, separate from the program.';
   PortableDescText =
-    'All PCSX2 Data will be kept in the same folder as PCSX2 itself by default.';
+    'All PCSX2 Data will be stored in the same folder as PCSX2 itself by default.';
 
 var
   StandardRadioButton: TNewRadioButton;
@@ -117,15 +122,18 @@ begin
   if isPortableInstallation = true then
     WizardForm.DirEdit.Text := 'C:\{#MyAppName}'
   else
-    WizardForm.DirEdit.Text := ExpandConstant('{commonpf}') + '\{#MyAppName}';
+    WizardForm.DirEdit.Text := ExpandConstant('{commonpf64}') + '\{#MyAppName}';
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
+var
+  Page: TWizardPage;
 begin
-  if CurPageID = 100 then
+  Page := PageFromID(CurPageID);
+  if Page.Caption = 'Installation type' then
     SetDefaultDirName();
     
-  if CurPageID = 6 then
+  if Page.Caption = 'Select Destination Location' then
   begin
     if Pos('C:\Windows\', WizardForm.DirEdit.Text) <> 0 then
     begin
