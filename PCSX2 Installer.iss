@@ -4,7 +4,7 @@
 #define MyAppName "PCSX2"
 #define MyAppVersion "v2.0.0"
 #define MyAppPublisher "PCSX2 Team"
-#define MyAppURL "http:/pcsx2.net/"
+#define MyAppURL "https:/pcsx2.net/"
 #define MyAppExeName "pcsx2-qt.exe"
 
 #define MyAppSourceDir "main"
