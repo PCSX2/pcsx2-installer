@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "PCSX2"
-#define MyAppVersion "v2.0.0"
+#define MyAppVersion "v2.0.2"
 #define MyAppPublisher "PCSX2 Team"
 #define MyAppURL "https:/pcsx2.net/"
 #define MyAppExeName "pcsx2-qt.exe"
