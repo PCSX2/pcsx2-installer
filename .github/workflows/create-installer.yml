@@ -1,0 +1,63 @@
+name: Create Installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      is_latest:
+        description: 'Should we pull from the latest tag?'
+        required: true
+        default: 'true'
+        type: 'choice'
+        options:
+          - 'true'
+          - 'false'
+      include_prelease:
+        description: 'Should the latest pre-release tag be used?'
+        required: true
+        default: 'false'
+        type: 'choice'
+        options:
+          - 'true'
+          - 'false'
+      tag_value:
+        description: 'The tag to use if latest is set to false. Include the "v" prefix!'
+        required: false
+
+jobs:
+  build-installer:
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: robinraju/release-downloader@v1
+      name: Download the Release
+      id: release_download
+      with:
+        repository: "PCSX2/pcsx2"
+        latest: ${{github.event.inputs.is_latest}}
+        preRelease: ${{github.event.inputs.include_prelease}}
+        tag: ${{github.event.inputs.tag_value}}
+        fileName: 'pcsx2-v*-windows-x64-Qt.7z'
+
+    - name: Extract the Release
+      shell: cmd
+      run: |
+        "C:\Program Files\7-Zip\7z.exe" x -o.\main pcsx2-${{steps.release_download.outputs.tag_name}}-windows-x64-Qt.7z
+
+    - name: Inject Release Tag into Installer Script
+      shell: bash
+      run: |
+        sed -i 's/PCSX2_VERSION_STRING/${{steps.release_download.outputs.tag_name}}/g' 'PCSX2 Installer.iss'
+
+    - uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+      name: Build the Release
+      with:
+        path: 'PCSX2 Installer.iss'
+
+    - name: Upload Installer Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        if-no-files-found: error
+        name: PCSX2-${{steps.release_download.outputs.tag_name}}-windows-x64-installer.exe
+        path: |
+          PCSX2\PCSX2-${{steps.release_download.outputs.tag_name}}-windows-x64-installer.exe
