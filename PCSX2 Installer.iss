@@ -3,7 +3,7 @@
 
 #define MyAppName "PCSX2"
 
-; Automatically changed by the GitHub action. An example would be "v2.0.0"
+; Automatically changed by the GitHub action. An example would be "2.0.0"
 #define MyAppVersion "PCSX2_VERSION_STRING"
 #define MyAppPublisher "PCSX2 Team"
 #define MyAppURL "https:/pcsx2.net/"
@@ -35,7 +35,7 @@ DefaultGroupName={#MyAppName}
 DefaultDirName={commonpf64}\{#MyAppName}
 
 OutputDir=PCSX2
-OutputBaseFilename={#MyAppName}-{#MyAppVersion}-windows-x64-installer
+OutputBaseFilename={#MyAppName}-v{#MyAppVersion}-windows-x64-installer
 
 ; InfoAfterFile=README.txt
 UninstallDisplayIcon={app}\{#MyAppExeName},0
