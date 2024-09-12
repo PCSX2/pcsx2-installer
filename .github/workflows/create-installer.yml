@@ -43,11 +43,18 @@ jobs:
       shell: cmd
       run: |
         "C:\Program Files\7-Zip\7z.exe" x -o.\main pcsx2-${{steps.release_download.outputs.tag_name}}-windows-x64-Qt.7z
+      
+    - name: Get our version tag
+      shell: bash
+      run: |
+        TAG_NAME=${{ steps.release_download.outputs.tag_name }}
+        VERSION=${TAG_NAME#v}
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Inject Release Tag into Installer Script
       shell: bash
       run: |
-        sed -i 's/PCSX2_VERSION_STRING/${{steps.release_download.outputs.tag_name}}/g' 'PCSX2 Installer.iss'
+        sed -i 's/PCSX2_VERSION_STRING/'"$VERSION"'/g' 'PCSX2 Installer.iss'
 
     - uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
       name: Build the Release
