@@ -24,10 +24,11 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-Compression=lzma/max
+Compression=lzma2/max
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=win64
-MinVersion=10.0.17134
+WizardStyle=modern
+MinVersion=10.0.17763
 ;10.0.22000 ; Windows 11 code just for testing failure on Windows 10
 
 DefaultGroupName={#MyAppName}
@@ -54,7 +55,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 
 [Files]
-Source: "{#MySetupResourceDir}\Redist\VC_redist.x64.exe"; DestDir: {tmp}
+Source: "{#MySetupResourceDir}\VC_redist.x64.exe"; DestDir: {tmp}
 Source: "{#MyAppSourceDir}\*"; Excludes: "PUT PCSX2 BUILD HERE.txt"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MySetupResourceDir}\portable.txt"; DestDir: {app} ; Check: IsPortableInstallation;
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
@@ -76,7 +77,7 @@ var
   FullDescLabel: TLabel;
   PartDescLabel: TLabel;
 begin
-  CustomPage := CreateCustomPage(wpWelcome, 'Installation type', '');
+  CustomPage := CreateCustomPage(wpWelcome, 'Installation type', 'Determine PCSX2's installation behavior');
   StandardRadioButton := TNewRadioButton.Create(WizardForm);
   StandardRadioButton.Parent := CustomPage.Surface;
   StandardRadioButton.Checked := True;
@@ -111,8 +112,6 @@ begin
   PartDescLabel.Wordwrap := True;
   PartDescLabel.Caption := PortableDescText;
 end;
-
-{TODO: Need to find a way to determine how to dynamically adjust "WizardForm.DirEdit.Text := ''" at runtime, how to if else on pascal?;}
 
 function isPortableInstallation: Boolean;
 begin
