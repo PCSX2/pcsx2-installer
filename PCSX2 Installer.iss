@@ -55,7 +55,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 
 [Files]
-Source: "{#MySetupResourceDir}\Redist\VC_redist.x64.exe"; DestDir: {tmp}
+Source: "{#MySetupResourceDir}\VC_redist.x64.exe"; DestDir: {tmp}
 Source: "{#MyAppSourceDir}\*"; Excludes: "PUT PCSX2 BUILD HERE.txt"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#MySetupResourceDir}\portable.txt"; DestDir: {app} ; Check: IsPortableInstallation;
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

@@ -39,6 +39,12 @@ jobs:
         tag: ${{github.event.inputs.tag_value}}
         fileName: 'pcsx2-v*-windows-x64-Qt.7z'
 
+    - name: Grab latest Visual C++ Redistributable Version
+      shell: cmd
+      run: | 
+        cd res
+        aria2c -Z "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+
     - name: Extract the Release
       shell: cmd
       run: |
