@@ -77,7 +77,7 @@ var
   FullDescLabel: TLabel;
   PartDescLabel: TLabel;
 begin
-  CustomPage := CreateCustomPage(wpWelcome, 'Installation type', '');
+  CustomPage := CreateCustomPage(wpWelcome, 'Installation type', 'Determine PCSX2's installation behavior');
   StandardRadioButton := TNewRadioButton.Create(WizardForm);
   StandardRadioButton.Parent := CustomPage.Surface;
   StandardRadioButton.Checked := True;
@@ -112,8 +112,6 @@ begin
   PartDescLabel.Wordwrap := True;
   PartDescLabel.Caption := PortableDescText;
 end;
-
-{TODO: Need to find a way to determine how to dynamically adjust "WizardForm.DirEdit.Text := ''" at runtime, how to if else on pascal?;}
 
 function isPortableInstallation: Boolean;
 begin
