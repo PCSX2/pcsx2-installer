@@ -28,7 +28,7 @@ Compression=lzma2/max
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=win64
 WizardStyle=modern
-MinVersion=10.0.17134
+MinVersion=10.0.17763
 ;10.0.22000 ; Windows 11 code just for testing failure on Windows 10
 
 DefaultGroupName={#MyAppName}
