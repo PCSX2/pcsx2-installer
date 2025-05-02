@@ -78,7 +78,7 @@ var
   FullDescLabel: TLabel;
   PartDescLabel: TLabel;
 begin
-  CustomPage := CreateCustomPage(wpWelcome, 'Installation type', 'Determine PCSX2's installation behavior');
+  CustomPage := CreateCustomPage(wpWelcome, 'Installation type', 'Determine PCSX2 installation behavior');
   StandardRadioButton := TNewRadioButton.Create(WizardForm);
   StandardRadioButton.Parent := CustomPage.Surface;
   StandardRadioButton.Checked := True;
