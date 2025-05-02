@@ -41,8 +41,9 @@ OutputBaseFilename={#MyAppName}-v{#MyAppVersion}-windows-x64-installer
 ; InfoAfterFile=README.txt
 UninstallDisplayIcon={app}\{#MyAppExeName},0
 SetupIconFile={#MySetupResourceDir}\AppIconLarge.ico
-;WizardImageFile={#MySetupResourceDir}\banner.bmp
+WizardImageFile={#MySetupResourceDir}\AppBanner.bmp
 WizardSmallImageFile={#MySetupResourceDir}/AppIconLarge.bmp
+AllowNoIcons=yes
 
 [Messages]
 WindowsVersionNotSupported=PCSX2 requires Windows 10 (1809) or later. To use this app, please update your operating system.
@@ -77,7 +78,7 @@ var
   FullDescLabel: TLabel;
   PartDescLabel: TLabel;
 begin
-  CustomPage := CreateCustomPage(wpWelcome, 'Installation type', 'Determine PCSX2's installation behavior');
+  CustomPage := CreateCustomPage(wpWelcome, 'Installation type', 'Determine PCSX2 installation behavior');
   StandardRadioButton := TNewRadioButton.Create(WizardForm);
   StandardRadioButton.Parent := CustomPage.Surface;
   StandardRadioButton.Checked := True;
