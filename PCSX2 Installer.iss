@@ -43,6 +43,7 @@ UninstallDisplayIcon={app}\{#MyAppExeName},0
 SetupIconFile={#MySetupResourceDir}\AppIconLarge.ico
 WizardImageFile={#MySetupResourceDir}\AppBanner.bmp
 WizardSmallImageFile={#MySetupResourceDir}/AppIconLarge.bmp
+AllowNoIcons=yes
 
 [Messages]
 WindowsVersionNotSupported=PCSX2 requires Windows 10 (1809) or later. To use this app, please update your operating system.
