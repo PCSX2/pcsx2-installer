@@ -41,7 +41,7 @@ OutputBaseFilename={#MyAppName}-v{#MyAppVersion}-windows-x64-installer
 ; InfoAfterFile=README.txt
 UninstallDisplayIcon={app}\{#MyAppExeName},0
 SetupIconFile={#MySetupResourceDir}\AppIconLarge.ico
-;WizardImageFile={#MySetupResourceDir}\banner.bmp
+WizardImageFile={#MySetupResourceDir}\AppBanner.bmp
 WizardSmallImageFile={#MySetupResourceDir}/AppIconLarge.bmp
 
 [Messages]
