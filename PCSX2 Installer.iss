@@ -8,6 +8,7 @@
 #define MyAppPublisher "PCSX2 Team"
 #define MyAppURL "https:/pcsx2.net/"
 #define MyAppExeName "pcsx2-qt.exe"
+#define MyAppID "{13CEE6E5-8EB3-47D3-882E-E9DBB6A3251C}"
 
 #define MyAppSourceDir "main"
 #define MySetupResourceDir "res"
@@ -16,7 +17,7 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{13CEE6E5-8EB3-47D3-882E-E9DBB6A3251C}}
+AppId={{#MyAppID}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppVerName={#MyAppName}
@@ -44,6 +45,10 @@ SetupIconFile={#MySetupResourceDir}\AppIconLarge.ico
 WizardImageFile={#MySetupResourceDir}\AppBanner.bmp
 WizardSmallImageFile={#MySetupResourceDir}/AppIconLarge.bmp
 AllowNoIcons=yes
+Uninstallable=yes
+CreateUninstallRegKey=yes
+UsePreviousAppDir=no
+DisableDirPage=no
 
 [Messages]
 WindowsVersionNotSupported=PCSX2 requires Windows 10 (1809) or later. To use this app, please update your operating system.
@@ -52,12 +57,11 @@ WindowsVersionNotSupported=PCSX2 requires Windows 10 (1809) or later. To use thi
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce; Check: IsStandardInstall
 
 [Files]
 Source: "{#MySetupResourceDir}\VC_redist.x64.exe"; DestDir: {tmp}
 Source: "{#MyAppSourceDir}\*"; Excludes: "PUT PCSX2 BUILD HERE.txt"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#MySetupResourceDir}\portable.txt"; DestDir: {app} ; Check: IsPortableInstall;
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Code]    
@@ -96,7 +100,7 @@ begin
   StandardDesc.Top := StandardRB.Top + ScaleY(24);
   StandardDesc.Left := ScaleX(18);
   StandardDesc.Width := OptionPage.SurfaceWidth - ScaleX(18);
-  StandardDesc.Caption := 'Installs to Program Files and saves data to Documents. Best for most users.';
+  StandardDesc.Caption := StandardDescText;
   StandardDesc.OnClick := @DescLabelClick;
 
   // Portable
@@ -112,7 +116,7 @@ begin
   PortableDesc.Top := PortableRB.Top + ScaleY(24);
   PortableDesc.Left := ScaleX(18);
   PortableDesc.Width := OptionPage.SurfaceWidth - ScaleX(18);
-  PortableDesc.Caption := 'Keeps all data inside the app folder. Ideal for USB drives or custom locations.';
+  PortableDesc.Caption := PortableDescText;
   PortableDesc.OnClick := @DescLabelClick;
 end;
 
@@ -168,13 +172,35 @@ begin
     
     if IsPortableInstall and (Pos(Uppercase(ExpandConstant('{commonpf64}')), SelectedDir) > 0) then
     begin
-      MsgBox('Portable install cannot be inside Program Files, please choose another folder.', mbError, MB_OK);
+      MsgBox('Portable install cannot be inside Program Files. Please choose another folder.', mbError, MB_OK);
       Result := false;
       Exit;
     end;
   end;
     
   Result := true;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  UninsExe, UninsDat, RegPath: String;
+begin
+  // Cleanup uninstaller entry when using portable mode because we dont want it there
+  // HACK: This is so janky but we have no other way because Inno setup doesn't provide a way to toggle the uninstaller deployment
+  if (CurStep = ssPostInstall) and IsPortableInstall then
+  begin
+    // Programatically put the portable.txt file so we dont have to include it in the repo
+    SaveStringToFile(ExpandConstant('{app}\portable.txt'), '', False);
+
+    UninsExe := ExpandConstant('{app}\unins000.exe');
+    UninsDat := ExpandConstant('{app}\unins000.dat');
+    if FileExists(UninsExe) then DeleteFile(UninsExe);
+    if FileExists(UninsDat) then DeleteFile(UninsDat);
+
+    RegPath := 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#MyAppID}_is1';
+    if RegKeyExists(HKLM64, RegPath) then RegDeleteKeyIncludingSubkeys(HKLM64, RegPath);
+    if RegKeyExists(HKLM32, RegPath) then RegDeleteKeyIncludingSubkeys(HKLM32, RegPath);
+  end;
 end;
 
 procedure SetMarqueeProgress(Marquee: Boolean);
@@ -191,22 +217,23 @@ end;
 
 [Icons]
 ; StartMenu
-Name: "{group}\{#MyAppName}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
-Name: "{group}\{#MyAppName}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}";
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Check: IsStandardInstall
+Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"; Check: IsStandardInstall
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; Check: IsStandardInstall
 
 ; Desktop
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
 ; Local Machine
-Root: HKLM; Subkey: "Software\{#MyAppPublisher}"; Flags: uninsdeletekeyifempty
-Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "InstallPath"; ValueData: {app}
+Root: HKLM; Subkey: "Software\{#MyAppPublisher}"; Flags: uninsdeletekeyifempty; Check: IsStandardInstall
+Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; Flags: uninsdeletekey; Check: IsStandardInstall
+Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "InstallPath"; ValueData: {app}; Check: IsStandardInstall
 
 [Run]
 Filename: "{tmp}\VC_redist.x64.exe"; Parameters: "/q /norestart"; \
     Flags: waituntilterminated; \
-    StatusMsg: "Installing VC++ 2019-2022 Redistributables... Please Wait."; \
+    StatusMsg: "Installing VC++ Redistributables... Please Wait, this may take a moment."; \
     BeforeInstall: SetMarqueeProgress(True); \
     AfterInstall: SetMarqueeProgress(False)
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
