@@ -50,7 +50,6 @@ WindowsVersionNotSupported=PCSX2 requires Windows 10 (1809) or later. To use thi
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
-;Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
@@ -58,7 +57,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "{#MySetupResourceDir}\VC_redist.x64.exe"; DestDir: {tmp}
 Source: "{#MyAppSourceDir}\*"; Excludes: "PUT PCSX2 BUILD HERE.txt"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#MySetupResourceDir}\portable.txt"; DestDir: {app} ; Check: IsPortableInstallation;
+Source: "{#MySetupResourceDir}\portable.txt"; DestDir: {app} ; Check: IsPortableInstall;
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Code]    
@@ -69,62 +68,78 @@ const
     'All PCSX2 Data will be stored in the same folder as PCSX2 itself by default.';
 
 var
-  StandardRadioButton: TNewRadioButton;
-  PortableRadioButton: TNewRadioButton;
-
-procedure InitializeWizard();
-var
-  CustomPage: TWizardPage;
-  FullDescLabel: TLabel;
-  PartDescLabel: TLabel;
+  OptionPage: TWizardPage;
+  StandardRB, PortableRB: TNewRadioButton;
+  StandardDesc, PortableDesc: TNewStaticText;
+  
+procedure DescLabelClick(Sender: TObject);
 begin
-  CustomPage := CreateCustomPage(wpWelcome, 'Installation type', 'Determine PCSX2 installation behavior');
-  StandardRadioButton := TNewRadioButton.Create(WizardForm);
-  StandardRadioButton.Parent := CustomPage.Surface;
-  StandardRadioButton.Checked := True;
-  StandardRadioButton.Top := 16;
-  StandardRadioButton.Width := CustomPage.SurfaceWidth;
-  StandardRadioButton.Font.Style := [fsBold];
-  StandardRadioButton.Font.Size := 9;
-  StandardRadioButton.Caption := 'Standard Installation'
-  FullDescLabel := TLabel.Create(WizardForm);
-  FullDescLabel.Parent := CustomPage.Surface;
-  FullDescLabel.Left := 8;
-  FullDescLabel.Top := StandardRadioButton.Top + StandardRadioButton.Height + 8;
-  FullDescLabel.Width := CustomPage.SurfaceWidth; 
-  FullDescLabel.Height := 40;
-  FullDescLabel.AutoSize := False;
-  FullDescLabel.Wordwrap := True;
-  FullDescLabel.Caption := StandardDescText;
-  PortableRadioButton := TNewRadioButton.Create(WizardForm);
-  PortableRadioButton.Parent := CustomPage.Surface;
-  PortableRadioButton.Top := FullDescLabel.Top + FullDescLabel.Height + 16;
-  PortableRadioButton.Width := CustomPage.SurfaceWidth;
-  PortableRadioButton.Font.Style := [fsBold];
-  PortableRadioButton.Font.Size := 9;
-  PortableRadioButton.Caption := 'Portable Installation'
-  PartDescLabel := TLabel.Create(WizardForm);
-  PartDescLabel.Parent := CustomPage.Surface;
-  PartDescLabel.Left := 8;
-  PartDescLabel.Top := PortableRadioButton.Top + PortableRadioButton.Height + 8;
-  PartDescLabel.Width := CustomPage.SurfaceWidth;
-  PartDescLabel.Height := 40;
-  PartDescLabel.AutoSize := False;
-  PartDescLabel.Wordwrap := True;
-  PartDescLabel.Caption := PortableDescText;
+  if Sender = StandardDesc then StandardRB.Checked := True
+  else if Sender = PortableDesc then PortableRB.Checked := True;
 end;
 
-function isPortableInstallation: Boolean;
+procedure InitializeWizard();
 begin
-  Result := PortableRadioButton.Checked;
+  OptionPage := CreateCustomPage(wpWelcome, 'Installation Type', 'How would you like to install PCSX2?');
+
+  // Standard
+  StandardRB := TNewRadioButton.Create(OptionPage);
+  StandardRB.Parent := OptionPage.Surface;
+  StandardRB.Top := ScaleY(8);
+  StandardRB.Width := OptionPage.SurfaceWidth;
+  StandardRB.Font.Style := [fsBold];
+  StandardRB.Caption := 'Standard Installation (Recommended)';
+  StandardRB.Checked := True;
+
+  StandardDesc := TNewStaticText.Create(OptionPage);
+  StandardDesc.Parent := OptionPage.Surface;
+  StandardDesc.Top := StandardRB.Top + ScaleY(24);
+  StandardDesc.Left := ScaleX(18);
+  StandardDesc.Width := OptionPage.SurfaceWidth - ScaleX(18);
+  StandardDesc.Caption := 'Installs to Program Files and saves data to Documents. Best for most users.';
+  StandardDesc.OnClick := @DescLabelClick;
+
+  // Portable
+  PortableRB := TNewRadioButton.Create(OptionPage);
+  PortableRB.Parent := OptionPage.Surface;
+  PortableRB.Top := StandardDesc.Top + ScaleY(40);
+  PortableRB.Width := OptionPage.SurfaceWidth;
+  PortableRB.Font.Style := [fsBold];
+  PortableRB.Caption := 'Portable Installation';
+
+  PortableDesc := TNewStaticText.Create(OptionPage);
+  PortableDesc.Parent := OptionPage.Surface;
+  PortableDesc.Top := PortableRB.Top + ScaleY(24);
+  PortableDesc.Left := ScaleX(18);
+  PortableDesc.Width := OptionPage.SurfaceWidth - ScaleX(18);
+  PortableDesc.Caption := 'Keeps all data inside the app folder. Ideal for USB drives or custom locations.';
+  PortableDesc.OnClick := @DescLabelClick;
+end;
+
+function IsPortableInstall: Boolean;
+begin
+  Result := PortableRB.Checked;
+end;
+
+function IsStandardInstall: Boolean;
+begin
+  Result := not IsPortableInstall;
 end;
 
 procedure SetDefaultDirName();
 begin
-  if isPortableInstallation = true then
+  if isPortableInstall = true then
     WizardForm.DirEdit.Text := 'C:\{#MyAppName}'
   else
     WizardForm.DirEdit.Text := ExpandConstant('{commonpf64}') + '\{#MyAppName}';
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+  // Skip Start Menu group selection for Portable mode
+  if (PageID = wpSelectProgramGroup) and IsPortableInstall then
+    Result := True;
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
@@ -132,7 +147,7 @@ var
   Page: TWizardPage;
 begin
   Page := PageFromID(CurPageID);
-  if Page.Caption = 'Installation type' then
+  if Page.Caption = 'Installation Type' then
     SetDefaultDirName();
     
   if Page.Caption = 'Select Destination Location' then
@@ -144,7 +159,7 @@ begin
       Exit;
     end;
     
-    if (isPortableInstallation = true) and (Pos('Program Files', WizardForm.DirEdit.Text) <> 0) then
+    if (isPortableInstall = true) and (Pos('Program Files', WizardForm.DirEdit.Text) <> 0) then
     begin
       MsgBox('Portable install cannot be inside Program Files, please choose another folder.', mbError, MB_OK);
       Result := false;
