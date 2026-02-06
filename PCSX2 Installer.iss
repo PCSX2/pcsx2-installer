@@ -28,7 +28,7 @@ AppUpdatesURL={#MyAppURL}
 Compression=lzma2/max
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=win64
-WizardStyle=modern
+WizardStyle=classic dynamic windows11 includetitlebar
 MinVersion=10.0.17763
 ;10.0.22000 ; Windows 11 code just for testing failure on Windows 10
 
@@ -43,7 +43,10 @@ OutputBaseFilename={#MyAppName}-v{#MyAppVersion}-windows-x64-installer
 UninstallDisplayIcon={app}\{#MyAppExeName},0
 SetupIconFile={#MySetupResourceDir}\AppIconLarge.ico
 WizardImageFile={#MySetupResourceDir}\AppBanner.bmp
-WizardSmallImageFile={#MySetupResourceDir}/AppIconLarge.bmp
+WizardImageFileDynamicDark={#MySetupResourceDir}\AppBannerDark.bmp
+WizardSmallImageFile={#MySetupResourceDir}/AppIcon.bmp
+WizardSmallImageFileDynamicDark={#MySetupResourceDir}/AppIconDark.bmp
+
 AllowNoIcons=yes
 Uninstallable=yes
 CreateUninstallRegKey=yes
