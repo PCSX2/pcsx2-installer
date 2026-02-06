@@ -127,17 +127,21 @@ begin
 end;
 
 procedure SetDefaultDirName();
+var
+  InstallerDrive: string;
 begin
   if isPortableInstall = true then
-    WizardForm.DirEdit.Text := 'C:\{#MyAppName}'
+    begin
+      InstallerDrive := ExtractFileDrive(ExpandConstant('{src}'));
+      WizardForm.DirEdit.Text := InstallerDrive + '\{#MyAppName}';
+     end
   else
-    WizardForm.DirEdit.Text := ExpandConstant('{commonpf64}') + '\{#MyAppName}';
+    WizardForm.DirEdit.Text := ExpandConstant('{commonpf64}\{#MyAppName}');
 end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := False;
-  // Skip Start Menu group selection for Portable mode
   if (PageID = wpSelectProgramGroup) and IsPortableInstall then
     Result := True;
 end;
@@ -145,21 +149,24 @@ end;
 function NextButtonClick(CurPageID: Integer): Boolean;
 var
   Page: TWizardPage;
+  SelectedDir: String;
 begin
   Page := PageFromID(CurPageID);
+  
   if Page.Caption = 'Installation Type' then
     SetDefaultDirName();
     
-  if Page.Caption = 'Select Destination Location' then
+  if CurPageID = wpSelectDir then
   begin
-    if Pos('C:\Windows\', WizardForm.DirEdit.Text) <> 0 then
+    SelectedDir := Uppercase(WizardForm.DirEdit.Text);
+    if IsPortableInstall and (Pos(Uppercase(ExpandConstant('{win}')), SelectedDir) > 0) then
     begin
       MsgBox('Installing PCSX2 in the Windows folder is not advised. Please choose another folder.', mbError, MB_OK);
       Result := false;
       Exit;
     end;
     
-    if (isPortableInstall = true) and (Pos('Program Files', WizardForm.DirEdit.Text) <> 0) then
+    if IsPortableInstall and (Pos(Uppercase(ExpandConstant('{commonpf64}')), SelectedDir) > 0) then
     begin
       MsgBox('Portable install cannot be inside Program Files, please choose another folder.', mbError, MB_OK);
       Result := false;
