@@ -8,6 +8,7 @@
 #define MyAppPublisher "PCSX2 Team"
 #define MyAppURL "https:/pcsx2.net/"
 #define MyAppExeName "pcsx2-qt.exe"
+#define MyAppID "{13CEE6E5-8EB3-47D3-882E-E9DBB6A3251C}"
 
 #define MyAppSourceDir "main"
 #define MySetupResourceDir "res"
@@ -16,7 +17,7 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{13CEE6E5-8EB3-47D3-882E-E9DBB6A3251C}}
+AppId={{#MyAppID}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppVerName={#MyAppName}
@@ -27,7 +28,7 @@ AppUpdatesURL={#MyAppURL}
 Compression=lzma2/max
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=win64
-WizardStyle=modern
+WizardStyle=classic dynamic windows11 includetitlebar
 MinVersion=10.0.17763
 ;10.0.22000 ; Windows 11 code just for testing failure on Windows 10
 
@@ -42,23 +43,28 @@ OutputBaseFilename={#MyAppName}-v{#MyAppVersion}-windows-x64-installer
 UninstallDisplayIcon={app}\{#MyAppExeName},0
 SetupIconFile={#MySetupResourceDir}\AppIconLarge.ico
 WizardImageFile={#MySetupResourceDir}\AppBanner.bmp
-WizardSmallImageFile={#MySetupResourceDir}/AppIconLarge.bmp
+WizardImageFileDynamicDark={#MySetupResourceDir}\AppBannerDark.bmp
+WizardSmallImageFile={#MySetupResourceDir}/AppIcon.bmp
+WizardSmallImageFileDynamicDark={#MySetupResourceDir}/AppIconDark.bmp
+
 AllowNoIcons=yes
+Uninstallable=yes
+CreateUninstallRegKey=yes
+UsePreviousAppDir=no
+DisableDirPage=no
 
 [Messages]
 WindowsVersionNotSupported=PCSX2 requires Windows 10 (1809) or later. To use this app, please update your operating system.
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
-;Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce; Check: IsStandardInstall
 
 [Files]
 Source: "{#MySetupResourceDir}\VC_redist.x64.exe"; DestDir: {tmp}
 Source: "{#MyAppSourceDir}\*"; Excludes: "PUT PCSX2 BUILD HERE.txt"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#MySetupResourceDir}\portable.txt"; DestDir: {app} ; Check: IsPortableInstallation;
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Code]    
@@ -69,90 +75,135 @@ const
     'All PCSX2 Data will be stored in the same folder as PCSX2 itself by default.';
 
 var
-  StandardRadioButton: TNewRadioButton;
-  PortableRadioButton: TNewRadioButton;
-
-procedure InitializeWizard();
-var
-  CustomPage: TWizardPage;
-  FullDescLabel: TLabel;
-  PartDescLabel: TLabel;
+  OptionPage: TWizardPage;
+  StandardRB, PortableRB: TNewRadioButton;
+  StandardDesc, PortableDesc: TNewStaticText;
+  
+procedure DescLabelClick(Sender: TObject);
 begin
-  CustomPage := CreateCustomPage(wpWelcome, 'Installation type', 'Determine PCSX2 installation behavior');
-  StandardRadioButton := TNewRadioButton.Create(WizardForm);
-  StandardRadioButton.Parent := CustomPage.Surface;
-  StandardRadioButton.Checked := True;
-  StandardRadioButton.Top := 16;
-  StandardRadioButton.Width := CustomPage.SurfaceWidth;
-  StandardRadioButton.Font.Style := [fsBold];
-  StandardRadioButton.Font.Size := 9;
-  StandardRadioButton.Caption := 'Standard Installation'
-  FullDescLabel := TLabel.Create(WizardForm);
-  FullDescLabel.Parent := CustomPage.Surface;
-  FullDescLabel.Left := 8;
-  FullDescLabel.Top := StandardRadioButton.Top + StandardRadioButton.Height + 8;
-  FullDescLabel.Width := CustomPage.SurfaceWidth; 
-  FullDescLabel.Height := 40;
-  FullDescLabel.AutoSize := False;
-  FullDescLabel.Wordwrap := True;
-  FullDescLabel.Caption := StandardDescText;
-  PortableRadioButton := TNewRadioButton.Create(WizardForm);
-  PortableRadioButton.Parent := CustomPage.Surface;
-  PortableRadioButton.Top := FullDescLabel.Top + FullDescLabel.Height + 16;
-  PortableRadioButton.Width := CustomPage.SurfaceWidth;
-  PortableRadioButton.Font.Style := [fsBold];
-  PortableRadioButton.Font.Size := 9;
-  PortableRadioButton.Caption := 'Portable Installation'
-  PartDescLabel := TLabel.Create(WizardForm);
-  PartDescLabel.Parent := CustomPage.Surface;
-  PartDescLabel.Left := 8;
-  PartDescLabel.Top := PortableRadioButton.Top + PortableRadioButton.Height + 8;
-  PartDescLabel.Width := CustomPage.SurfaceWidth;
-  PartDescLabel.Height := 40;
-  PartDescLabel.AutoSize := False;
-  PartDescLabel.Wordwrap := True;
-  PartDescLabel.Caption := PortableDescText;
+  if Sender = StandardDesc then StandardRB.Checked := True
+  else if Sender = PortableDesc then PortableRB.Checked := True;
 end;
 
-function isPortableInstallation: Boolean;
+procedure InitializeWizard();
 begin
-  Result := PortableRadioButton.Checked;
+  OptionPage := CreateCustomPage(wpWelcome, 'Installation Type', 'How would you like to install PCSX2?');
+
+  // Standard
+  StandardRB := TNewRadioButton.Create(OptionPage);
+  StandardRB.Parent := OptionPage.Surface;
+  StandardRB.Top := ScaleY(8);
+  StandardRB.Width := OptionPage.SurfaceWidth;
+  StandardRB.Font.Style := [fsBold];
+  StandardRB.Caption := 'Standard Installation (Recommended)';
+  StandardRB.Checked := True;
+
+  StandardDesc := TNewStaticText.Create(OptionPage);
+  StandardDesc.Parent := OptionPage.Surface;
+  StandardDesc.Top := StandardRB.Top + ScaleY(24);
+  StandardDesc.Left := ScaleX(18);
+  StandardDesc.Width := OptionPage.SurfaceWidth - ScaleX(18);
+  StandardDesc.Caption := StandardDescText;
+  StandardDesc.OnClick := @DescLabelClick;
+
+  // Portable
+  PortableRB := TNewRadioButton.Create(OptionPage);
+  PortableRB.Parent := OptionPage.Surface;
+  PortableRB.Top := StandardDesc.Top + ScaleY(40);
+  PortableRB.Width := OptionPage.SurfaceWidth;
+  PortableRB.Font.Style := [fsBold];
+  PortableRB.Caption := 'Portable Installation';
+
+  PortableDesc := TNewStaticText.Create(OptionPage);
+  PortableDesc.Parent := OptionPage.Surface;
+  PortableDesc.Top := PortableRB.Top + ScaleY(24);
+  PortableDesc.Left := ScaleX(18);
+  PortableDesc.Width := OptionPage.SurfaceWidth - ScaleX(18);
+  PortableDesc.Caption := PortableDescText;
+  PortableDesc.OnClick := @DescLabelClick;
+end;
+
+function IsPortableInstall: Boolean;
+begin
+  Result := PortableRB.Checked;
+end;
+
+function IsStandardInstall: Boolean;
+begin
+  Result := not IsPortableInstall;
 end;
 
 procedure SetDefaultDirName();
+var
+  InstallerDrive: string;
 begin
-  if isPortableInstallation = true then
-    WizardForm.DirEdit.Text := 'C:\{#MyAppName}'
+  if isPortableInstall = true then
+    begin
+      InstallerDrive := ExtractFileDrive(ExpandConstant('{src}'));
+      WizardForm.DirEdit.Text := InstallerDrive + '\{#MyAppName}';
+     end
   else
-    WizardForm.DirEdit.Text := ExpandConstant('{commonpf64}') + '\{#MyAppName}';
+    WizardForm.DirEdit.Text := ExpandConstant('{commonpf64}\{#MyAppName}');
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+  if (PageID = wpSelectProgramGroup) and IsPortableInstall then
+    Result := True;
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
 var
   Page: TWizardPage;
+  SelectedDir: String;
 begin
   Page := PageFromID(CurPageID);
-  if Page.Caption = 'Installation type' then
+  
+  if Page.Caption = 'Installation Type' then
     SetDefaultDirName();
     
-  if Page.Caption = 'Select Destination Location' then
+  if CurPageID = wpSelectDir then
   begin
-    if Pos('C:\Windows\', WizardForm.DirEdit.Text) <> 0 then
+    SelectedDir := Uppercase(WizardForm.DirEdit.Text);
+    if IsPortableInstall and (Pos(Uppercase(ExpandConstant('{win}')), SelectedDir) > 0) then
     begin
       MsgBox('Installing PCSX2 in the Windows folder is not advised. Please choose another folder.', mbError, MB_OK);
       Result := false;
       Exit;
     end;
     
-    if (isPortableInstallation = true) and (Pos('Program Files', WizardForm.DirEdit.Text) <> 0) then
+    if IsPortableInstall and (Pos(Uppercase(ExpandConstant('{commonpf64}')), SelectedDir) > 0) then
     begin
-      MsgBox('Portable install cannot be inside Program Files, please choose another folder.', mbError, MB_OK);
+      MsgBox('Portable install cannot be inside Program Files. Please choose another folder.', mbError, MB_OK);
       Result := false;
       Exit;
     end;
   end;
     
   Result := true;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  UninsExe, UninsDat, RegPath: String;
+begin
+  // Cleanup uninstaller entry when using portable mode because we dont want it there
+  // HACK: This is so janky but we have no other way because Inno setup doesn't provide a way to toggle the uninstaller deployment
+  if (CurStep = ssPostInstall) and IsPortableInstall then
+  begin
+    // Programatically put the portable.txt file so we dont have to include it in the repo
+    SaveStringToFile(ExpandConstant('{app}\portable.txt'), '', False);
+
+    UninsExe := ExpandConstant('{app}\unins000.exe');
+    UninsDat := ExpandConstant('{app}\unins000.dat');
+    if FileExists(UninsExe) then DeleteFile(UninsExe);
+    if FileExists(UninsDat) then DeleteFile(UninsDat);
+
+    RegPath := 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#MyAppID}_is1';
+    if RegKeyExists(HKLM64, RegPath) then RegDeleteKeyIncludingSubkeys(HKLM64, RegPath);
+    if RegKeyExists(HKLM32, RegPath) then RegDeleteKeyIncludingSubkeys(HKLM32, RegPath);
+  end;
 end;
 
 procedure SetMarqueeProgress(Marquee: Boolean);
@@ -169,22 +220,23 @@ end;
 
 [Icons]
 ; StartMenu
-Name: "{group}\{#MyAppName}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
-Name: "{group}\{#MyAppName}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}";
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Check: IsStandardInstall
+Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"; Check: IsStandardInstall
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; Check: IsStandardInstall
 
 ; Desktop
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
 ; Local Machine
-Root: HKLM; Subkey: "Software\{#MyAppPublisher}"; Flags: uninsdeletekeyifempty
-Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "InstallPath"; ValueData: {app}
+Root: HKLM; Subkey: "Software\{#MyAppPublisher}"; Flags: uninsdeletekeyifempty; Check: IsStandardInstall
+Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; Flags: uninsdeletekey; Check: IsStandardInstall
+Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "InstallPath"; ValueData: {app}; Check: IsStandardInstall
 
 [Run]
 Filename: "{tmp}\VC_redist.x64.exe"; Parameters: "/q /norestart"; \
     Flags: waituntilterminated; \
-    StatusMsg: "Installing VC++ 2019-2022 Redistributables... Please Wait."; \
+    StatusMsg: "Installing VC++ Redistributables... Please Wait, this may take a moment."; \
     BeforeInstall: SetMarqueeProgress(True); \
     AfterInstall: SetMarqueeProgress(False)
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

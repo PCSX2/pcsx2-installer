@@ -43,7 +43,7 @@ jobs:
       shell: cmd
       run: | 
         cd res
-        aria2c -Z "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+        aria2c -Z "https://aka.ms/vc14/vc_redist.x64.exe"
 
     - name: Extract the Release
       shell: cmd
