@@ -29,7 +29,7 @@ Compression=lzma2/max
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=win64
 WizardStyle=classic dynamic windows11 includetitlebar
-MinVersion=10.0.17763
+MinVersion=10.0.19044
 ;10.0.22000 ; Windows 11 code just for testing failure on Windows 10
 
 DefaultGroupName={#MyAppName}
@@ -54,7 +54,7 @@ UsePreviousAppDir=no
 DisableDirPage=no
 
 [Messages]
-WindowsVersionNotSupported=PCSX2 requires Windows 10 (1809) or later. To use this app, please update your operating system.
+WindowsVersionNotSupported=PCSX2 requires Windows 10 (21H2 LTSC/22H2) or later. To use this app, please update your operating system.
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
