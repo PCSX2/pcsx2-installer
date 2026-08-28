@@ -3,25 +3,22 @@ name: Create Installer
 on:
   workflow_dispatch:
     inputs:
-      is_latest:
-        description: 'Should we pull from the latest tag?'
+      run_id:
+        description: 'The PCSX2 workflow run ID containing the build artifact'
         required: true
-        default: 'true'
-        type: 'choice'
-        options:
-          - 'true'
-          - 'false'
-      include_prelease:
-        description: 'Should the latest pre-release tag be used?'
+        type: string
+      artifact_name:
+        description: 'The exact PCSX2 build artifact name, e.g. PCSX2-windows-Qt-x64-sha[abc1234]'
         required: true
-        default: 'false'
-        type: 'choice'
-        options:
-          - 'true'
-          - 'false'
+        type: string
       tag_value:
-        description: 'The tag to use if latest is set to false. Include the "v" prefix!'
-        required: false
+        description: 'The PCSX2 tag/version. Include the "v" prefix!'
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
 
 jobs:
   build-installer:
@@ -29,15 +26,14 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - uses: robinraju/release-downloader@daf26c55d821e836577a15f77d86ddc078948b05
-      name: Download the Release
-      id: release_download
+    - uses: actions/download-artifact@v8
+      name: Download the PCSX2 build artifact
       with:
+        github-token: ${{ secrets.PCSX2_TOKEN }}
         repository: "PCSX2/pcsx2"
-        latest: ${{github.event.inputs.is_latest}}
-        preRelease: ${{github.event.inputs.include_prelease}}
-        tag: ${{github.event.inputs.tag_value}}
-        fileName: 'pcsx2-v*-windows-x64-Qt.7z'
+        run-id: ${{ inputs.run_id }}
+        name: ${{ inputs.artifact_name }}
+        path: main
 
     - name: Grab latest Visual C++ Redistributable Version
       shell: cmd
@@ -45,15 +41,10 @@ jobs:
         cd res
         aria2c -Z "https://aka.ms/vc14/vc_redist.x64.exe"
 
-    - name: Extract the Release
-      shell: cmd
-      run: |
-        "C:\Program Files\7-Zip\7z.exe" x -o.\main pcsx2-${{steps.release_download.outputs.tag_name}}-windows-x64-Qt.7z
-
     - name: Get our version tag
       shell: bash
       run: |
-        TAG_NAME=${{ steps.release_download.outputs.tag_name }}
+        TAG_NAME=${{ inputs.tag_value }}
         VERSION=${TAG_NAME#v}
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
@@ -71,6 +62,6 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         if-no-files-found: error
-        name: PCSX2-${{steps.release_download.outputs.tag_name}}-windows-x64-installer.exe
+        name: PCSX2-${{ inputs.tag_value }}-windows-x64-installer.exe
         path: |
-          PCSX2\PCSX2-${{steps.release_download.outputs.tag_name}}-windows-x64-installer.exe
+          PCSX2\PCSX2-${{ inputs.tag_value }}-windows-x64-installer.exe
