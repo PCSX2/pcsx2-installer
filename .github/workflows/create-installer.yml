@@ -53,7 +53,7 @@ jobs:
       run: |
         sed -i 's/PCSX2_VERSION_STRING/'"$VERSION"'/g' 'PCSX2 Installer.iss'
 
-    - uses: Minionguyjpro/Inno-Setup-Action@36abc9fdddc244a69f4895566fa5b2d8d5854e43
+    - uses: Minionguyjpro/Inno-Setup-Action@ec985ef724d1fb4a05bfbc1a8e49930dc76d2b0c
       name: Build the Release
       with:
         path: 'PCSX2 Installer.iss'
