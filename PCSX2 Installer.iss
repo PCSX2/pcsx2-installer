@@ -37,7 +37,7 @@ DefaultGroupName={#MyAppName}
 DefaultDirName={commonpf64}\{#MyAppName}
 
 OutputDir=PCSX2
-OutputBaseFilename={#MyAppName}-v{#MyAppVersion}-windows-x64-installer
+OutputBaseFilename=pcsx2-v{#MyAppVersion}-windows-x64-installer
 
 ; InfoAfterFile=README.txt
 UninstallDisplayIcon={app}\{#MyAppExeName},0
